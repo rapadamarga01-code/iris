@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; color: #333; }
+        .container { max-width: 500px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        form { margin-bottom: 20px; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .result-box { margin-top: 20px; padding: 15px; border-left: 5px solid #28a745; background-color: #d4edda; display: none; }
+        .error-box { margin-top: 20px; padding: 15px; border-left: 5px solid #dc3545; background-color: #f8d7da; color: #721c24; display: none; }
+    </style>
+</head>
+<body>
+
+
+<div class="container">
+    <h2>Upload Device Image</h2>
+
+
+    <!-- Form updated with the correct field name matching app.py -->
+    <form id="uploadForm">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">Predict</button>
+    </form>
+
+
+    <!-- UI Container Elements for showing the classification outputs dynamically -->
+    <div id="resultBox" class="result-box">
+        <h3>Prediction Result:</h3>
+        <p><strong>Predicted Class Index:</strong> <span id="resClass"></span></p>
+        <p><strong>Confidence Score:</strong> <span id="resConf"></span>%</p>
+    </div>
+
+
+    <div id="errorBox" class="error-box"></div>
+</div>
+
+
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+       
+        const resultBox = document.getElementById('resultBox');
+        const errorBox = document.getElementById('errorBox');
+       
+        resultBox.style.display = 'none';
+        errorBox.style.display = 'none';
+
+
+        const formData = new FormData(e.target);
+
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+
+            const data = await response.json();
+
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Server error occurred');
+            }
+
+
+            // Populates and displays the layout structure on completion
+            document.getElementById('resClass').innerText = data.class_label; // Shows 'keyboard' or 'mouse'
+            document.getElementById('resConf').innerText = (data.confidence * 100).toFixed(2);
+            resultBox.style.display = 'block';
+
+
+        } catch (error) {
+            errorBox.innerText = error.message;
+            errorBox.style.display = 'block';
+        }
+    });
+</script>
+
+
+</body>
+</html>
+
